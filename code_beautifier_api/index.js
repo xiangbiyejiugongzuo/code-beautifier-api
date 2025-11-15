@@ -1,49 +1,63 @@
 const express = require('express');
 const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
 // 健康检查
 app.get('/', (req, res) => {
+  console.log('Health check received');
   res.json({ 
-    status: 'ok', 
-    service: 'Simple Code Analyzer',
-    message: '服务正常运行中' 
+    status: 'OK', 
+    service: 'Code Beautifier API',
+    message: '服务正常运行！',
+    timestamp: new Date().toISOString()
   });
 });
 
-// 极简代码分析（不依赖prettier，快速响应）
-app.post('/beautify', (req, res) => {
+// 代码分析接口
+app.post('/analyze', (req, res) => {
+  console.log('Analyze request received');
+  
   try {
     const { code, language = 'text' } = req.body;
 
-    if (typeof code !== 'string' || code.trim().length === 0) {
+    if (!code || typeof code !== 'string') {
       return res.status(400).json({ 
-        error: '请提供有效的代码'
+        error: '请提供有效的代码',
+        success: false 
       });
     }
-    
-    // 极简分析：只统计基础信息
-    const stats = {
+
+    // 极简分析逻辑
+    const analysis = {
       length: code.length,
       lines: code.split('\n').length,
       language: language
     };
 
-    // 立即响应，确保在扣子超时前返回
+    console.log('Analysis completed:', analysis);
+
+    // 立即响应
     res.json({
       success: true,
-      data: stats,
-      message: `分析完成：${stats.lines}行代码，${stats.length}个字符`,
+      data: analysis,
+      message: `分析完成：${analysis.lines}行代码，${analysis.length}个字符`,
       beautified_result: `\`\`\`${language}\n${code.trim()}\n\`\`\``
     });
 
   } catch (error) {
-    // 快速失败，不拖时间
+    console.error('Error:', error);
     res.status(500).json({ 
-      error: '处理失败: ' + error.message
+      success: false,
+      error: '处理失败: ' + error.message 
     });
   }
 });
 
-module.exports = app;
+// 关键：启动服务器监听
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
+  console.log(`📍 Health check: http://localhost:${port}/`);
+  console.log(`📍 Analyze API: http://localhost:${port}/analyze`);
+});
