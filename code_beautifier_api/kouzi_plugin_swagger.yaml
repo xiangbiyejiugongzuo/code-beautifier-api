@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: 代码美化格式化工具 (Prettier)
+  description: 一个用于美化和格式化代码的协作工具，集成了业界标准的 Prettier。
+  version: '1.0.0'
+servers:
+  - url: https://code-beautifier-api.vercel.app
+paths:
+  /beautify:
+    post:
+      operationId: beautify_code
+      summary: 格式化/美化代码片段
+      description: 接收一段代码和其语言类型，使用 Prettier 进行格式化，并返回美观的代码。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: 需要被美化和格式化的原始代码片段。
+                language:
+                  type: string
+                  description: 代码的语言类型，例如 'javascript', 'json', 'typescript'。默认是 'javascript'。
+              required:
+                - code
+      responses:
+        '200':
+          description: 格式化成功后的代码结果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  beautified_result:
+                    type: string
+                    description: 格式化后的代码字符串，已经用Markdown代码块包裹。
+                  language_used:
+                    type: string
+                    description: 实际用于格式化的语言类型。
+        '400':
+          description: 参数错误，缺少代码
+        '500':
+          description: 服务器内部错误或格式化失败
